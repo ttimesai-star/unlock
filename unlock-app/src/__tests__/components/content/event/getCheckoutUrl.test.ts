@@ -19,7 +19,10 @@ describe('getCheckoutUrl', () => {
   it('embeds the config in the query string when there is no saved id', () => {
     expect.assertions(2)
     const config = { locks: {} }
-    const checkoutConfig = { name: 'Event', config } as unknown as CheckoutConfig
+    const checkoutConfig = {
+      name: 'Event',
+      config,
+    } as unknown as CheckoutConfig
 
     const url = new URL(getCheckoutUrl(checkoutConfig))
     expect(url.pathname).toBe('/checkout')

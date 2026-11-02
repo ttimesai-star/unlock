@@ -33,7 +33,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           appConfig.unlockApp
         )
       ).catch((error) => {
-        console.error(`Error fetching frame metadata for config id '${id}':`, error)
+        console.error(
+          `Error fetching frame metadata for config id '${id}':`,
+          error
+        )
         return {}
       }),
     ])

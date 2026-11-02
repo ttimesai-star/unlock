@@ -70,9 +70,7 @@ export const getEventUrl = ({
 export const getCheckoutUrl = (checkoutConfig: CheckoutConfig) => {
   // Saved checkout configs use the path-based URL: `/checkout/<id>`
   const url = new URL(
-    checkoutConfig.id
-      ? getCheckoutPath(checkoutConfig.id)
-      : '/checkout',
+    checkoutConfig.id ? getCheckoutPath(checkoutConfig.id) : '/checkout',
     window.location.origin
   )
 
