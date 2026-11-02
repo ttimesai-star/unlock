@@ -4,7 +4,7 @@ import { fetchMetadata } from 'frames.js/next'
 import { CheckoutPage as CheckoutPageComponent } from '~/components/interface/checkout'
 import { getConfig } from '../../frames/checkout/components/utils'
 import { config as appConfig } from '~/config/app'
-import { getCheckoutPath } from '~/utils/checkoutPath'
+import { getCheckoutPath, isCheckoutId } from '~/utils/checkoutPath'
 
 type Props = {
   params: { id: string }
@@ -18,7 +18,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: 'Checkout | Unlock Protocol',
   }
 
-  if (!id) {
+  // Do not call locksmith or the frames route for ids that cannot be a saved
+  // checkout config.
+  if (!isCheckoutId(id)) {
     return baseMetadata
   }
 
@@ -43,6 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     // Return base metadata if config could not be fetched
     if (!config) {
+      console.warn(`Checkout config not found for id '${id}'`)
       return baseMetadata
     }
 
@@ -53,7 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
       // `/checkout?id=<id>` redirects here: this is the canonical URL.
       alternates: {
-        canonical: `${appConfig.unlockApp}${getCheckoutPath(id)}`,
+        canonical: new URL(getCheckoutPath(id), appConfig.unlockApp).toString(),
       },
       other: {
         ...frameMetadata,
@@ -66,7 +69,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const CheckoutPage: React.FC<Props> = ({ params }) => {
-  return <CheckoutPageComponent id={params.id} />
+  return <CheckoutPageComponent id={params.id?.trim()} />
 }
 
 export default CheckoutPage

@@ -30,14 +30,16 @@ describe('getCheckoutUrl', () => {
   })
 
   it('drops an empty redirectUri', () => {
-    expect.assertions(1)
+    expect.assertions(2)
     const checkoutConfig = {
       id: 'abc',
       name: 'Event',
       config: { locks: {}, redirectUri: '' },
     } as unknown as CheckoutConfig
 
-    getCheckoutUrl(checkoutConfig)
+    expect(getCheckoutUrl(checkoutConfig)).toBe(
+      `${window.location.origin}/checkout/abc`
+    )
     expect(checkoutConfig.config).not.toHaveProperty('redirectUri')
   })
 })

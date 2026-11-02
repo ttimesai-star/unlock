@@ -49,7 +49,9 @@ export function NotificationsMenu() {
   */
   if (
     !email &&
-    !['/checkout', '/demo'].some((path) => pathname?.startsWith(path))
+    !['/checkout', '/demo'].some(
+      (path) => pathname === path || pathname?.startsWith(`${path}/`)
+    )
   ) {
     notifications.push({
       id: '1',
