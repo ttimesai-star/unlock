@@ -46,6 +46,14 @@ const config = {
         destination: '/locks',
         permanent: true,
       },
+      // legacy checkout URL with a saved config id: /checkout?id=<id> -> /checkout/<id>
+      // (checkouts without an id, e.g. ?paywallConfig=..., are not matched)
+      {
+        source: '/checkout',
+        has: [{ type: 'query', key: 'id', value: '(?<id>[A-Za-z0-9_-]{1,128})' }],
+        destination: '/checkout/:id',
+        permanent: true,
+      },
       // redirect to checkout page and preserve path
       {
         source: '/alpha/checkout/:path*',
