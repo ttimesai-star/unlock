@@ -42,50 +42,61 @@ describe('getCheckoutPath', () => {
 describe('getLegacyCheckoutRedirect', () => {
   it('redirects /checkout?id=<id> to /checkout/<id>', () => {
     expect.assertions(1)
-    expect(getLegacyCheckoutRedirect({ id })).toBe(`/checkout/${id}`)
+    expect(getLegacyCheckoutRedirect(new URLSearchParams({ id }))).toBe(
+      `/checkout/${id}`
+    )
   })
 
   it('keeps the other query parameters, in order, without the id', () => {
     expect.assertions(1)
-    expect(
-      getLegacyCheckoutRedirect({
-        redirectUri: 'https://example.com/thanks?x=1',
-        id,
-        referrerAddress: '0x1234567890123456789012345678901234567890',
-      })
-    ).toBe(
+    const params = new URLSearchParams()
+    params.append('redirectUri', 'https://example.com/thanks?x=1')
+    params.append('id', id)
+    params.append(
+      'referrerAddress',
+      '0x1234567890123456789012345678901234567890'
+    )
+
+    expect(getLegacyCheckoutRedirect(params)).toBe(
       `/checkout/${id}?redirectUri=https%3A%2F%2Fexample.com%2Fthanks%3Fx%3D1&referrerAddress=0x1234567890123456789012345678901234567890`
     )
   })
 
   it('keeps repeated query parameters', () => {
     expect.assertions(1)
-    expect(getLegacyCheckoutRedirect({ id, tag: ['a', 'b'] })).toBe(
-      `/checkout/${id}?tag=a&tag=b`
-    )
+    expect(
+      getLegacyCheckoutRedirect(new URLSearchParams(`id=${id}&tag=a&tag=b`))
+    ).toBe(`/checkout/${id}?tag=a&tag=b`)
   })
 
   it('uses the first value when the id is repeated, like searchParams.get', () => {
     expect.assertions(1)
-    expect(getLegacyCheckoutRedirect({ id: [id, 'other'] })).toBe(
-      `/checkout/${id}`
-    )
+    expect(
+      getLegacyCheckoutRedirect(new URLSearchParams(`id=${id}&id=other`))
+    ).toBe(`/checkout/${id}`)
   })
 
   it('does not redirect checkouts without a saved config id', () => {
-    expect.assertions(4)
-    expect(getLegacyCheckoutRedirect({})).toBeNull()
-    expect(getLegacyCheckoutRedirect(undefined)).toBeNull()
-    expect(getLegacyCheckoutRedirect({ id: '' })).toBeNull()
+    expect.assertions(3)
+    expect(getLegacyCheckoutRedirect(new URLSearchParams())).toBeNull()
+    expect(getLegacyCheckoutRedirect(new URLSearchParams('id='))).toBeNull()
     expect(
-      getLegacyCheckoutRedirect({ paywallConfig: '{"locks":{}}' })
+      getLegacyCheckoutRedirect(
+        new URLSearchParams({ paywallConfig: '{"locks":{}}' })
+      )
     ).toBeNull()
   })
 
   it('does not redirect unsafe ids (no open redirect, no path traversal)', () => {
     expect.assertions(3)
-    expect(getLegacyCheckoutRedirect({ id: '//evil.example' })).toBeNull()
-    expect(getLegacyCheckoutRedirect({ id: '../locks' })).toBeNull()
-    expect(getLegacyCheckoutRedirect({ id: 'a?b=c' })).toBeNull()
+    expect(
+      getLegacyCheckoutRedirect(new URLSearchParams({ id: '//evil.example' }))
+    ).toBeNull()
+    expect(
+      getLegacyCheckoutRedirect(new URLSearchParams({ id: '../locks' }))
+    ).toBeNull()
+    expect(
+      getLegacyCheckoutRedirect(new URLSearchParams({ id: 'a?b=c' }))
+    ).toBeNull()
   })
 })
