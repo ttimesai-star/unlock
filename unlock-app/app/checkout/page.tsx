@@ -1,57 +1,28 @@
 import React from 'react'
 import { Metadata } from 'next'
-import { fetchMetadata } from 'frames.js/next'
+import { permanentRedirect } from 'next/navigation'
 import { CheckoutPage as CheckoutPageComponent } from '~/components/interface/checkout'
-import { getConfig } from '../frames/checkout/components/utils'
-import { config as appConfig } from '~/config/app'
+import { getLegacyCheckoutRedirect } from '~/utils/checkoutPath'
 
 type Props = {
-  searchParams: { id: string }
+  searchParams: { [key: string]: string | string[] | undefined }
 }
 
-export async function generateMetadata({
-  searchParams,
-}: Props): Promise<Metadata> {
-  const id = searchParams?.id?.trim()
-
-  // Default metadata without frame data
-  const baseMetadata: Metadata = {
-    title: 'Checkout | Unlock Protocol',
-  }
-
-  // Return base metadata if no valid ID is present
-  if (!id || id.length === 0) {
-    return baseMetadata
-  }
-
-  try {
-    const config = await getConfig(id)
-
-    // Return base metadata if config could not be fetched
-    if (!config) {
-      return baseMetadata
-    }
-
-    const metadata: Metadata = {
-      title: config.title || baseMetadata.title,
-      openGraph: {
-        images: [`/og/checkout?id=${id}`],
-      },
-      other: {
-        ...(await fetchMetadata(
-          new URL(`/frames/checkout?id=${id}`, appConfig.unlockApp)
-        )),
-      },
-    }
-
-    return metadata
-  } catch (error) {
-    console.error('Error generating metadata:', error)
-    return baseMetadata
-  }
+// Checkouts that use a saved config (`?id=`) are served from `/checkout/<id>`
+// (see `[id]/page.tsx`, which also generates their metadata). What remains
+// here are checkouts without a saved config id, such as `?paywallConfig=`.
+export const metadata: Metadata = {
+  title: 'Checkout | Unlock Protocol',
 }
 
-const CheckoutPage: React.FC = () => {
+const CheckoutPage: React.FC<Props> = ({ searchParams }) => {
+  // Permanently redirect the legacy `/checkout?id=<id>` URL to
+  // `/checkout/<id>`, keeping all other query parameters.
+  const redirectTo = getLegacyCheckoutRedirect(searchParams)
+  if (redirectTo) {
+    permanentRedirect(redirectTo)
+  }
+
   return <CheckoutPageComponent />
 }
 
